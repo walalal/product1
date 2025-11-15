@@ -1,7 +1,7 @@
 export const onRequest = async ({ env, params }) => {
   const sku = params.sku;
 
-  const p = await env.product.get(`product:${sku}`, { type: "json" });
+  const p = await env.product.get(sku, { type: "json" });
 
   if (!p) {
     return new Response("Product Not Found", { status: 404 });
