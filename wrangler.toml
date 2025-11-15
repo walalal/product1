@@ -1,0 +1,13 @@
+name = "product1"
+compatibility_date = "2024-01-01"
+
+# 这是 Cloudflare Pages Functions 的配置方式
+[pages]
+pages_build_output_dir = "./out"
+functions = "./functions"
+routes = ["/*"]
+
+# KV 绑定
+[[kv_namespaces]]
+binding = "product"
+id = "8ba2506769b643c38cc6d32e1736e502"
