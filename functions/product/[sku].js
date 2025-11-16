@@ -1,4 +1,5 @@
-export const onRequest = async ({ request, env, params }) => {
+export async function onRequest(context) {
+  const { request, env, params } = context;
   const sku = params.sku;
 
   const p = await env.product.get(sku, { type: "json" });
