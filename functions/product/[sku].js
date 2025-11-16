@@ -1,10 +1,17 @@
-export const onRequest = async ({ env, params }) => {
+export const onRequest = async ({ request, env, params }) => {
   const sku = params.sku;
 
   const p = await env.product.get(sku, { type: "json" });
 
   if (!p) {
     return new Response("Product Not Found", { status: 404 });
+  }
+
+  const cacheKey = new Request(request.url, request);
+  const cache = await caches.open("pages-cache");
+  let response = await cache.match(cacheKey);
+  if (response) {
+    return new Response(response.body, response);
   }
 
   // 大图区域初始显示第一张图片或视频封面
@@ -146,12 +153,27 @@ export const onRequest = async ({ env, params }) => {
   </html>
   `;
 
-  return new Response(html, {
+  response = new Response(html, {
     headers: {
       "content-type": "text/html; charset=utf-8",
-      'Cloudflare-CDN-Cache-Control': 'max-age=300, stale-while-revalidate=600',
-      'Cache-Control': 'public, max-age=3600'
-    },
+
+      // -------- CDN 缓存（Edge Cache）---------
+      "Cache-Control": "public, max-age=3600", // 浏览器+CDN缓存1小时
+
+      // Cloudflare Edge 缓存提示（调试用）
+      "CF-Worker-Cache": "MISS",
+    }
+  });
+
+  context.waitUntil(cache.put(cacheKey, response.clone()));
+
+  return new Response(response.body, {
+    ...response,
+    cf: {
+      cacheTtl: 3600,        // Edge CDN 缓存 TTL
+      cacheEverything: true, // 不仅缓存静态，也缓存动态 HTML
+      tieredCache: true,     // 🔥 启用分层缓存
+    }
   });
 };
 
