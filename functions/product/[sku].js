@@ -147,7 +147,11 @@ export const onRequest = async ({ env, params }) => {
   `;
 
   return new Response(html, {
-    headers: { "content-type": "text/html; charset=utf-8" },
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      'Cloudflare-CDN-Cache-Control': 'max-age=300, stale-while-revalidate=600',
+      'Cache-Control': 'public, max-age=3600'
+    },
   });
 };
 
